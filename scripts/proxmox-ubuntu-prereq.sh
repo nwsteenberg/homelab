@@ -7,7 +7,11 @@
 apt update
 
 # install qemu-guest-agent
-apt install -y qemu-guest-agent yq
+apt install -y qemu-guest-agent
+
+# install yq
+wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
+    chmod +x /usr/bin/yq
 
 # install the latest kernel
 apt dist-upgrade

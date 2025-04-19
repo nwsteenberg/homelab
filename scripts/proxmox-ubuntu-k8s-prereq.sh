@@ -31,16 +31,20 @@ mkdir /etc/containerd
 containerd config default | tee /etc/containerd/config.toml
 # Enable systemd cgroup driver and ipv4 forwarding
 sed 's/SystemdCgroup = false/SystemdCgroup = true/g' -i /etc/containerd/config.toml
-sed 's/#net.ipv4.ip_forward=1/net.ipv4.ipforward=1/g' -i /etc/sysctl.conf
-echo "br_netfilter" >> /etc/modules-load.d/k8s.conf
+echo "br_netfilter" > /etc/modules-load.d/k8s.conf
+cat >/etc/sysctl.d/local.conf <<EOL
+net.ipv4.ipforward=1
+EOL
 
 # Setup Kubernetes keyring (from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management)
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg # allow unprivileged APT programs to read this keyring
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list   # helps tools such as command-not-found to work correctly
+if [ ! -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg ]; then
+  curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg # allow unprivileged APT programs to read this keyring
+  echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list   # helps tools such as command-not-found to work correctly
+fi
 
 apt update
-apt install kubectl kubeadm kubelet
+apt install -y kubectl kubeadm kubelet
 
 reboot
