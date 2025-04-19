@@ -33,7 +33,7 @@ containerd config default | tee /etc/containerd/config.toml
 sed 's/SystemdCgroup = false/SystemdCgroup = true/g' -i /etc/containerd/config.toml
 echo "br_netfilter" > /etc/modules-load.d/k8s.conf
 cat >/etc/sysctl.d/local.conf <<EOL
-net.ipv4.ipforward=1
+net.ipv4.ip_forward=1
 EOL
 
 # Setup Kubernetes keyring (from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management)
